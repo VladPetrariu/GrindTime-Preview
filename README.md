@@ -3,23 +3,30 @@
 
 ---
 
-## Overview
+## Overview 🌎
 
 ---
 
-## Core Features
+## Core Features 💪
 
 ---
 
-## Tech Stack
+## Tech Stack 📱
 
 ---
 
-## Screenshots & Design
+## Screenshots & Design 📸
 
 ---
 
-## License
+## License 🔐
+
+Copyright © 2025 Vlad Petrariu. All rights reserved.
+
+This repository is provided for preview and educational purposes only.
+No part of this project—including code, designs, or assets—may be copied,
+modified, distributed, or used for commercial purposes without explicit
+written permission from the author.
 
 ---
 
