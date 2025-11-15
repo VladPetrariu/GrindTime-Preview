@@ -18,7 +18,20 @@ All other functionality, backend logic, session storage and proprietary features
 This section describes the full GrindTime app.
 
 **⭐️ Productivity Timer**
-- 
+* High precision session timing
+* Start/Pause/Stop/Restart flow
+* Smooth live updates using CACurrentMediaTime()
+* Automatic session logging once both start/end photos are captured
+
+**⭐️ Guided Photo Capture**
+* Workspace + Selfie capture (start and end)
+* Automatic camera switching (front and back)
+* Clean, Snapchat style full screen capture UI
+* Debounced image handling, downscaling, and memory safe processing
+* When capturing images, user can select between different camera settings such as ultra wide (x0.5), normal (x1.0), or zoomed in (x2.0) depending on phone capabilities.
+
+**⭐️ Personal Profile**
+
 
 ---
 
