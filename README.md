@@ -1,13 +1,20 @@
 # GrindTime-Preview
-**Preview of GrindTime**, a social media app centered around productivity and competition. Built with SwiftUI and Supabase, its focused on tracking and visualizing work sessions.
+**Preview of GrindTime**, a productivity focused social app build with SwiftUI.
+This repo showcases the timer engine and photo capture workflow used in the full GrindTime app. In this README I will also describe what GrindTime is in more detail and provide screen shots of the current working version of the app.
 
 ---
 
 ## Overview 🌎
+GrindTime is an iOS mobile app designed to track studying to make it feel more interactive, competitive and rewarding. 
+Users track focused work sessions by capturing start and end photos, tracking time spend working on each session and visualizing progress over time.
+
+This preview includes only the UI and interaction logic for the timer and camera flow.
+All other functionality, backend logic, session storage and proprietary features remain private.
 
 ---
 
 ## Core Features 💪
+
 
 ---
 
