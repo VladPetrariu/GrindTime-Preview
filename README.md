@@ -6,15 +6,19 @@ This repo showcases the timer engine and photo capture workflow used in the full
 
 ## Overview 🌎
 GrindTime is an iOS mobile app designed to track studying to make it feel more interactive, competitive and rewarding. 
-Users track focused work sessions by capturing start and end photos, tracking time spend working on each session and visualizing progress over time.
+Users log focused work sessions using a guided photo flow (workspace + selfie), tracking consistency through visual analytics and share progress with friends with an instagram style feed.
 
+The full version of GrindTime includes a profile page, session history, heatmaps, social features, and a competitive leaderboard.
 This preview includes only the UI and interaction logic for the timer and camera flow.
 All other functionality, backend logic, session storage and proprietary features remain private.
 
 ---
 
 ## Core Features 💪
+This section describes the full GrindTime app.
 
+**⭐️ Productivity Timer**
+- 
 
 ---
 
