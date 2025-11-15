@@ -30,16 +30,68 @@ This section describes the full GrindTime app.
 * Debounced image handling, downscaling, and memory safe processing
 * When capturing images, user can select between different camera settings such as ultra wide (x0.5), normal (x1.0), or zoomed in (x2.0) depending on phone capabilities.
 
-**⭐️ Personal Profile**
+**⭐️ Personal Profile Page**
+* When creating an account, user sets name, username and password
+* On profile page, user can update, username, profile picture and bio
+* User profiles includes total monthly gring time
+* Activity heatmap calander to visualize study/grind consistency
+* Full instagram style session gallery
+* Tap to view posts (workspace + selfie, swipe through start/end)
 
+**⭐️ Feed & Social**
+* Follow friends to see their posts on your feed
+* Scrollable feed of friends study/work sessions
+* Like and comment interactions (future feature)
+
+**⭐️ Leaderboard (premium + future feature)**
+* Compare monthly grind times with friends
+* Long term streaks and consistency metrics
+* First place on leaderboard awards
+
+**⭐️ Backend & Sync (Private)**
+The full app uses a secure back end for:
+* User authentication
+* Session Storage
+* Image uploads
+* Social graph
+* Feed + leaderboard generation
+*(All backend code is private and not included in this preview repository)*
+
+**⭐️ Privacy and Security**
+* Minimal data collection
+* Strong user controlled permissions
+* All sync done over secure channels
 
 ---
 
 ## Tech Stack 📱
+These describe the actual full app, not just the preview.
 
+**iOS App**
+* SwiftUI - main UI framework
+* AVFoundation - custom camera system (Workspace and selfie image capture)
+* Core Data - local storage + caching
+* Swift Concurrency - async capture and image processing
+* PhotosUI & UIKit Interop - image rendering, compression, and downscaling
+
+**Backend (full app, private)**
+* Supabase
+  * Postgres database
+  * Row-level security (RLS)
+  * Auth (email/passwork + OAuth)
+  * Storage for user images
+  * Edge functions for session processing
+* Cloudflare / CDN for image delivery (future profuction plan)
+
+**Architecture**
+* MVVM + service based modular structure
+* Fully offline capable timer
+* Automatic background safe session tracking
 ---
 
 ## Screenshots & Design 📸
+
+*Will be included in future updates*
 
 ---
 
@@ -48,7 +100,7 @@ This section describes the full GrindTime app.
 Copyright © 2025 Vlad Petrariu. All rights reserved.
 
 This repository is provided for preview and educational purposes only.
-No part of this project—including code, designs, or assets—may be copied,
+No part of this project, including code, designs, or assets may be copied,
 modified, distributed, or used for commercial purposes without explicit
 written permission from the author.
 
