@@ -49,7 +49,7 @@ This section describes the full GrindTime app.
 * First place on leaderboard awards
 
 **⭐️ Backend & Sync (Private)**
-* The full app uses a secure back end for
+* The full app uses a secure back end for:
   * User authentication
   * Session Storage
   * Image uploads
