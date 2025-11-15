@@ -10,8 +10,6 @@ private enum CapturePhase: String {
 }
 
 struct ContentView: View {
-    @Environment(\.managedObjectContext) private var viewContext
-
     // ---- Timer model (accumulation-based) ----
     @State private var isRunning = false
     @State private var startTick: CFTimeInterval = 0
@@ -31,24 +29,24 @@ struct ContentView: View {
     // Debounce photo callbacks
     @State private var lastHandledCaptureAt = Date.distantPast
 
-    // Captured images
+    // Captured images (in-memory only for preview)
     @State private var wsStart: Data?
     @State private var sfStart: Data?
     @State private var wsEnd: Data?
     @State private var sfEnd: Data?
 
-    // Recent sessions UI
+    // Recent sessions UI (local only)
     @State private var lastSessions: [String] = []
 
     // ---- UI sizing (lock widths/heights) ----
-    private let mainButtonWidth: CGFloat = 170     // narrower
+    private let mainButtonWidth: CGFloat = 170
     private let mainButtonHeight: CGFloat = 56
-    private let splitButtonWidth: CGFloat = 170    // same width as main
+    private let splitButtonWidth: CGFloat = 170
     private let splitButtonHeight: CGFloat = 56
     private let splitButtonCorner: CGFloat = 16
     private let rowSpacing: CGFloat = 14
-    private let restartHeight: CGFloat = 34  // capsule approx height
-    // Reserve enough vertical space for the *largest* state (running: row + small gap + restart)
+    private let restartHeight: CGFloat = 34
+
     private var actionAreaHeight: CGFloat {
         splitButtonHeight + 8 + restartHeight
     }
@@ -95,7 +93,7 @@ struct ContentView: View {
 
                 // ======= ACTION AREA (fixed height, top-aligned per state) =======
                 ZStack(alignment: .top) {
-                    // Running state: Pause/Stop row + Restart (TOP aligned)
+                    // Running state
                     VStack(spacing: 8) {
                         HStack(spacing: rowSpacing) {
                             Button(action: pauseTapped) {
@@ -135,7 +133,7 @@ struct ContentView: View {
                     .allowsHitTesting(isRunning)
                     .frame(maxWidth: .infinity, alignment: .top)
 
-                    // Paused state: Resume + Restart (TOP aligned)
+                    // Paused state
                     VStack(spacing: 8) {
                         Button(action: startOrResumeTapped) {
                             Text("Resume")
@@ -163,7 +161,7 @@ struct ContentView: View {
                     .allowsHitTesting(isPaused && !isRunning)
                     .frame(maxWidth: .infinity, alignment: .top)
 
-                    // Idle state: Start only (TOP aligned, with invisible spacer so height matches)
+                    // Idle state
                     VStack(spacing: 8) {
                         Button(action: startOrResumeTapped) {
                             Text("Start")
@@ -175,7 +173,6 @@ struct ContentView: View {
                         .cornerRadius(20)
                         .contentShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
 
-                        // Invisible placeholder to reserve the spot where Restart would be
                         Color.clear
                             .frame(height: restartHeight)
                             .allowsHitTesting(false)
@@ -184,7 +181,7 @@ struct ContentView: View {
                     .allowsHitTesting((!isRunning && !isPaused))
                     .frame(maxWidth: .infinity, alignment: .top)
                 }
-                .frame(height: actionAreaHeight)     // <- locks vertical space
+                .frame(height: actionAreaHeight)
                 .padding(.horizontal, 20)
                 // ================================================================
 
@@ -195,7 +192,6 @@ struct ContentView: View {
         .onAppear {
             camera.onPhotoCaptured = { image in handlePhoto(image) }
         }
-        // iOS 15+ compatible change observer (sheet dismissal)
         .task(id: showCamera) {
             if !showCamera && shouldStartTimerAfterDismiss {
                 shouldStartTimerAfterDismiss = false
@@ -257,7 +253,6 @@ struct ContentView: View {
     }
 
     private func restartSession() {
-        // Cancel any flows and reset everything
         showCamera = false
         phase = nil
         wsStart = nil; sfStart = nil; wsEnd = nil; sfEnd = nil
@@ -270,20 +265,19 @@ struct ContentView: View {
     }
 
     private func actuallyStartTimer() {
-        // Start ticking from zero after start photos
         accumulated = 0
         startTick = CACurrentMediaTime()
         isRunning = true
         isPaused = false
     }
-    
-    // ContentView.swift
-    // [2025-11-13] Simple UIKit downscale helper.
+
+    // MARK: - Image downscale helper
+
+    // [2025-11-14] Simple UIKit downscale helper for preview.
     private func downscale(_ image: UIImage, maxDimension: CGFloat = 900) -> UIImage {
         let size = image.size
         let maxSide = max(size.width, size.height)
 
-        // If it's already small enough, don't touch it.
         guard maxSide > maxDimension else { return image }
 
         let scale = maxDimension / maxSide
@@ -295,10 +289,8 @@ struct ContentView: View {
         }
     }
 
-    // MARK: - Photo handling (debounced)
+    // MARK: - Photo handling (debounced, local only)
 
-    // ContentView.swift
-    // [2025-11-13] Downscale + stronger JPEG compression for faster feed loads.
     private func handlePhoto(_ image: UIImage) {
         let now = Date()
         guard now.timeIntervalSince(lastHandledCaptureAt) > 0.25 else { return }
@@ -306,10 +298,7 @@ struct ContentView: View {
 
         guard let p = phase else { return }
 
-        // 1) Downscale very large photos to something feed-friendly (~1400px max side)
         let downsized = downscale(image, maxDimension: 900)
-
-        // 2) Use stronger JPEG compression (0.6 instead of 0.9)
         guard let data = downsized.jpegData(compressionQuality: 0.5) else { return }
 
         switch p {
@@ -333,7 +322,7 @@ struct ContentView: View {
             sfEnd = data
             showCamera = false
             phase = nil
-            saveSession() // uses frozenElapsed captured at Stop
+            saveSession()
         }
     }
 
@@ -356,75 +345,29 @@ struct ContentView: View {
             // Cancel during start flow -> remain idle
             showCamera = false
             phase = nil
-            camera.resetBackDefaults()   // ensure next Start opens at 1× on back
+            camera.resetBackDefaults()
         }
     }
 
-    // MARK: - Save + Post
+    // MARK: - Save (preview-only, no persistence)
 
     private func saveSession() {
         let duration = frozenElapsed
 
-        // UI: prepend last session string
+        // UI-only: prepend last session string
         let sessionString = formatTime(duration)
         withAnimation(.easeOut(duration: 0.3)) {
             lastSessions.insert(sessionString, at: 0)
-            if lastSessions.count > 3 { lastSessions = Array(lastSessions.prefix(3)) }
+            if lastSessions.count > 3 {
+                lastSessions = Array(lastSessions.prefix(3))
+            }
         }
 
-        // Core Data
-        let s = GrindSession(context: viewContext)
-        s.timestamp           = Date()
-        s.duration            = duration
-        s.workspaceStartImage = wsStart
-        s.selfieStartImage    = sfStart
-        s.workspaceEndImage   = wsEnd
-        s.selfieEndImage      = sfEnd
-        s.userId = SupabaseManager.shared.client.auth.currentUser?.id.uuidString
+        // NOTE:
+        // In the full app, this is where Core Data + backend sync happen.
+        // For the public preview, all persistence has been removed.
 
-        do { try viewContext.save() }
-        catch { print("[GrindTime] Core Data save failed: \(error)") }
-
-        // --- inside saveSession(), right before the Cloud post ---
-        let createdAtConst = s.timestamp ?? Date()
-        let durConst = Int(duration.rounded())
-
-        // Snapshot the images BEFORE any mutation/reset:
-        let wsStartSnap = wsStart
-        let sfStartSnap = sfStart
-        let wsEndSnap   = wsEnd
-        let sfEndSnap   = sfEnd
-
-        // Optional: quick sanity log
-        print("[Sync] sizes:",
-              wsStartSnap?.count ?? 0,
-              sfStartSnap?.count ?? 0,
-              wsEndSnap?.count ?? 0,
-              sfEndSnap?.count ?? 0)
-
-        // Replace old SessionPoster block with this:
-        Task.detached(priority: .background) {
-          do {
-            try await SessionSyncService.shared.uploadAndInsert(
-              createdAt: createdAtConst,
-              durationSec: durConst,
-              assets: SessionAssetsData(
-                workspaceStart: wsStartSnap,
-                selfieStart:    sfStartSnap,
-                workspaceEnd:   wsEndSnap,
-                selfieEnd:      sfEndSnap
-              )
-            )
-            print("[Sync] insert OK")
-          } catch {
-            print("[Sync] failed:", error)
-          }
-        }
-
-        // ...now it's safe to clear the state:
-        wsStart = nil; sfStart = nil; wsEnd = nil; sfEnd = nil
-
-        // Reset run-specific state for next session
+        // Clear images and timer state for next run
         wsStart = nil; sfStart = nil; wsEnd = nil; sfEnd = nil
         isRunning = false
         isPaused = false
