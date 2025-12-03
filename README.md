@@ -81,7 +81,6 @@ These describe the actual full app, not just the preview.
   * Auth (email/passwork + OAuth)
   * Storage for user images
   * Edge functions for session processing
-* Cloudflare / CDN for image delivery (future profuction plan)
 
 **Architecture**
 * MVVM + service based modular structure
