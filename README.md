@@ -92,14 +92,7 @@ These describe the actual full app, not just the preview.
 
 ## Screenshots & Design 📸
 
-Profile page:
-![08B2BEE0-C860-4043-B88C-5C8109FED22F_1_201_a](https://github.com/user-attachments/assets/7fbf032b-06d9-4c1c-920a-8dd1f7fbbe57)
-
-Social feed:
-
-Timer:
-
-Forced study photos:
+To see screenshots and learn more, visit my website at: https://www.grindtime.app
 
 ---
 
