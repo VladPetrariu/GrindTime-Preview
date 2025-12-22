@@ -2,6 +2,8 @@
 **Preview of GrindTime**, a productivity focused social app build with SwiftUI.
 This repo showcases the timer engine and photo capture workflow used in the full GrindTime app. In this README I will also describe what GrindTime is in more detail and provide screen shots of the current working version of the app.
 
+LINK TO WEBSITE NOW LIVE AT: https://www.grindtime.app
+
 ---
 
 ## Overview 🌎
