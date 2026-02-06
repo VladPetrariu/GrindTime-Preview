@@ -1,113 +1,95 @@
-# GrindTime-Preview
-**Preview of GrindTime**, a productivity focused social app build with SwiftUI.
-This repo showcases the timer engine and photo capture workflow used in the full GrindTime app. In this README I will also describe what GrindTime is in more detail and provide screen shots of the current working version of the app.
+# GrindTime
 
-LINK TO WEBSITE NOW LIVE AT: https://www.grindtime.app
+**A productivity-focused social iOS app for tracking study and work sessions.**
 
----
-
-## Overview 🌎
-GrindTime is an iOS mobile app designed to track studying to make it feel more interactive, competitive and rewarding. 
-Users log focused work sessions using a guided photo flow (workspace + selfie), tracking consistency through visual analytics and share progress with friends with an instagram style feed.
-
-The full version of GrindTime includes a profile page, session history, heatmaps, social features, and a competitive leaderboard.
-This preview includes only the UI and interaction logic for the timer and camera flow.
-All other functionality, backend logic, session storage and proprietary features remain private.
+![Platform](https://img.shields.io/badge/platform-iOS%2018.2+-blue) ![Swift](https://img.shields.io/badge/Swift-6.0-orange) ![Status](https://img.shields.io/badge/status-TestFlight%20Beta-green)
 
 ---
 
-## Core Features 💪
-This section describes the full GrindTime app.
+## Overview
 
-**⭐️ Productivity Timer**
-* High precision session timing
-* Start/Pause/Stop/Restart flow
-* Smooth live updates using CACurrentMediaTime()
-* Automatic session logging once both start/end photos are captured
+GrindTime is a native iOS app that turns focused work into a social experience. Users start a high-precision timer, capture workspace and selfie photos at the start and end of each session, and share their progress with friends through an Instagram-style feed. The app tracks consistency through heatmaps and leaderboards, making productivity visible and competitive.
 
-**⭐️ Guided Photo Capture**
-* Workspace + Selfie capture (start and end)
-* Automatic camera switching (front and back)
-* Clean, Snapchat style full screen capture UI
-* Debounced image handling, downscaling, and memory safe processing
-* When capturing images, user can select between different camera settings such as ultra wide (x0.5), normal (x1.0), or zoomed in (x2.0) depending on phone capabilities.
-
-**⭐️ Personal Profile Page**
-* When creating an account, user sets name, username and password
-* On profile page, user can update, username, profile picture and bio
-* User profiles includes total monthly gring time
-* Activity heatmap calander to visualize study/grind consistency
-* Full instagram style session gallery
-* Tap to view posts (workspace + selfie, swipe through start/end)
-
-**⭐️ Feed & Social**
-* Follow friends to see their posts on your feed
-* Scrollable feed of friends study/work sessions
-* Like and comment interactions (future feature)
-
-**⭐️ Leaderboard (premium + future feature)**
-* Compare monthly grind times with friends
-* Long term streaks and consistency metrics
-* First place on leaderboard awards
-
-**⭐️ Backend & Sync (Private)**
-* The full app uses a secure back end for:
-  * User authentication
-  * Session Storage
-  * Image uploads
-  * Social graph
-  * Feed + leaderboard generation
-  *(All backend code is private and not included in this preview repository)*
-
-**⭐️ Privacy and Security**
-* Minimal data collection
-* Strong user controlled permissions
-* All sync done over secure channels
+Built entirely in SwiftUI with 48 Swift source files across 6 organized modules. Backend powered by Supabase (Postgres, Auth, Storage, RLS).
 
 ---
 
-## Tech Stack 📱
-These describe the actual full app, not just the preview.
+## Key Features
 
-**iOS App**
-* SwiftUI - main UI framework
-* AVFoundation - custom camera system (Workspace and selfie image capture)
-* Core Data - local storage + caching
-* Swift Concurrency - async capture and image processing
-* PhotosUI & UIKit Interop - image rendering, compression, and downscaling
-
-**Backend (full app, private)**
-* Supabase
-  * Postgres database
-  * Row-level security (RLS)
-  * Auth (email/passwork + OAuth)
-  * Storage for user images
-  * Edge functions for session processing
-
-**Architecture**
-* MVVM + service based modular structure
-* Fully offline capable timer
-* Automatic background safe session tracking
----
-
-## Screenshots & Design 📸
-
-To see screenshots and learn more, visit my website at: https://www.grindtime.app
+- **Session Timer** — Centisecond-precision stopwatch with start/pause/stop/restart flow and persistence across app kills
+- **Guided Photo Capture** — Workspace + selfie photos at session start and end, with multi-lens camera selection and full-screen Snapchat-style UI
+- **Social Feed** — Follow friends and browse their sessions in a scrollable, paginated feed
+- **Profile** — Editable username, bio, and profile picture with monthly grind time totals
+- **Activity Heatmap** — Per-day duration aggregation with dynamic opacity gradients to visualize consistency
+- **Leaderboard** — Compare monthly grind times with friends (premium, in development)
+- **Session Gallery** — Tap any session to swipe through start/end workspace and selfie photos
 
 ---
 
-## License 🔐
+## Architecture & Technical Highlights
 
-Copyright © 2025 Vlad Petrariu. All rights reserved.
+### Overall Architecture
+MVVM + Repository + Service layer pattern. The codebase is organized into 6 modules: **Core**, **Features**, **Models**, **Repositories**, **Services**, and **Config**. All async work uses Swift's structured concurrency (`async/await`, `TaskGroup`), with `@MainActor` isolation for UI-bound state.
 
-This repository is provided for preview and educational purposes only.
-No part of this project, including code, designs, or assets may be copied,
-modified, distributed, or used for commercial purposes without explicit
-written permission from the author.
+### Timer Engine
+Accumulation-based timing using `CACurrentMediaTime()` for centisecond precision. A pause/resume state machine tracks elapsed intervals, and the accumulated duration persists to `UserDefaults` so sessions survive app kills and backgrounding.
+
+### Camera System
+Custom AVFoundation camera with multi-lens selection — ultra-wide (0.5x), wide (1.0x), and telephoto (2.0x) — using FOV-based detection to distinguish optical from digital zoom. Front-camera captures use a screen flash simulation for low-light selfies. The preview shows a mirrored image (natural for selfies) while the captured output is saved unmirrored.
+
+### Session Sync Pipeline
+After a session ends, images upload in parallel via `TaskGroup` (up to 4 concurrent uploads). Sync uses timestamp-based incremental filtering to avoid re-uploading, with duplicate prevention through remote ID checks. Uploaded images use signed URL caching to minimize redundant storage requests.
+
+### Image Processing
+JPEG compression at 50% quality with 900px max-dimension downscaling to keep uploads small. Capture callbacks are debounced with a 250ms guard to prevent duplicate frames.
+
+### Feed
+Queries use PostgREST OR-filter disjunctions across the user's social graph, joining profile data in a single request. Pagination is offset/limit-based, rendered in a `LazyVStack` for smooth scrolling.
+
+### Heatmap
+Per-day session duration aggregation rendered as a calendar grid with dynamic opacity gradients proportional to daily grind time.
+
+### Authentication
+Supabase Auth with PKCE flow. Supports username-to-email fallback login (users can sign in with either). Debounced dual availability checks validate both email and username uniqueness during signup. Incomplete signups are gated behind a profile completion screen.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| **UI** | SwiftUI, PhotosUI, UIKit interop |
+| **Camera** | AVFoundation (multi-lens, front/back, flash simulation) |
+| **Concurrency** | Swift structured concurrency (`async/await`, `TaskGroup`) |
+| **Local Storage** | Core Data, UserDefaults |
+| **Backend** | Supabase v2.31.2 (Postgres, Auth, Storage, Edge Functions) |
+| **Security** | Row-level security (RLS), PKCE auth flow, minimal data collection |
+| **Min Deployment** | iOS 18.2 |
+
+---
+
+## Preview Code
+
+This public repository contains the **timer engine** and **photo capture workflow** — the two most technically interesting subsystems in GrindTime. All other functionality (backend integration, social features, session storage, feed, leaderboard) remains in the private repository.
+
+---
+
+## Screenshots & Website
+
+Visit **[grindtime.app](https://www.grindtime.app)** for screenshots, feature details, and TestFlight access.
+
+---
+
+## License
+
+Copyright 2025 Vlad Petrariu. All rights reserved.
+
+This repository is provided for preview and portfolio purposes only. No part of this project may be copied, modified, distributed, or used for commercial purposes without explicit written permission from the author.
 
 ---
 
 ## Author
+
 **Vlad Petrariu**
-- [LinkedIn] www.linkedin.com/in/vladpetrariu777 
-- [GitHub] https://github.com/VladPetrariu
+- [LinkedIn](https://www.linkedin.com/in/vladpetrariu777)
+- [GitHub](https://github.com/VladPetrariu)
